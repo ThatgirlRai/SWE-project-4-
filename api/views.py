@@ -70,7 +70,10 @@ class CreateGameBySizeView(APIView):
                 gname = f"Random{size}Grid:{now.strftime('%Y-%m-%d %H:%M:%S')}"
 
                 # Load dictionary file
-                file_path = finders.find("data/full-wordlist.json")
+                if dictionary_language.lower() == "spanish":
+                  file_path = finders.find("data/spanish-wordlist.json")
+                else:
+                  file_path = finders.find("data/full-wordlist.json")
                 if not file_path:
                     raise Exception("Dictionary file not found.")
 
@@ -137,7 +140,14 @@ class GameDetailView(APIView):
         game = get_object_or_404(Game, id=id)
         return Response(GameSerializer(game).data)
 
+    def delete(self, request, id):
+        game = get_object_or_404(Game, id=id)
+        game.delete()
 
+        return Response(
+            {"detail": "Game deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 class GameLeaderBoardView(APIView):
     """
     GET  /games/{id}/leaderboard
@@ -190,4 +200,21 @@ class GameLeaderBoardView(APIView):
         return Response(
             LeaderBoardEntrySerializer(entry).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class LeaderBoardEntryDeleteView(APIView):
+    """
+    DELETE /leaderboard-entries/{id}/
+    Deletes one leaderboard entry by UUID.
+    """
+    permission_classes = [AllowAny]
+
+    def delete(self, request, id):
+        entry = get_object_or_404(LeaderBoardEntry, id=id)
+        entry.delete()
+
+        return Response(
+            {"detail": "Leaderboard entry deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
         )
